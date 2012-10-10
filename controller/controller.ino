@@ -1,105 +1,97 @@
-/*
-  Web Server
- 
- A simple web server that shows the value of the analog input pins.
- using an Arduino Wiznet Ethernet shield. 
- 
- Circuit:
- * Ethernet shield attached to pins 10, 11, 12, 13
- * Analog inputs attached to pins A0 through A5 (optional)
- 
- created 18 Dec 2009
- by David A. Mellis
- modified 9 Apr 2012
- by Tom Igoe
- 
- */
-
 #include <SPI.h>
 #include <Ethernet.h>
+#include <WebServer.h>
 
 const int statusPin =  2;
 const int switchPin =  3;
 
-// Enter a MAC address and IP address for your controller below.
-// The IP address will be dependent on your local network:
-byte mac[] = { 0x90, 0xA2, 0xDA, 0x0D, 0x6F, 0x1C };
-IPAddress ip(192,168,2,42);
+/* CHANGE THIS TO YOUR OWN UNIQUE VALUE.  The MAC number should be
+ * different from any other devices on your network or you'll have
+ * problems receiving packets. */
+static uint8_t mac[] = {  0x90, 0xA2, 0xDA, 0x0D, 0x6F, 0x1C  };
 
-// Initialize the Ethernet server library
-// with the IP address and port you want to use 
-// (port 80 is default for HTTP):
-EthernetServer server(8080);
 
-void setup() {
- // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-   while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
+/* CHANGE THIS TO MATCH YOUR HOST NETWORK.  Most home networks are in
+ * the 192.168.0.XXX or 192.168.1.XXX subrange.  Pick an address
+ * that's not in use and isn't going to be automatically allocated by
+ * DHCP from your router. */
+static uint8_t ip[] = { 192, 168, 2, 42 };
+
+/* This creates an instance of the webserver.  By specifying a prefix
+ * of "", all pages will be at the root of the server. */
+#define PREFIX ""
+WebServer webserver(PREFIX, 8080);
+
+/* commands are functions that get called by the webserver framework
+ * they can read any posted data from client, and they output to the
+ * server to send data back to the web browser. */
+void helloCmd(WebServer &server, WebServer::ConnectionType type, char *, bool)
+{
+  /* this line sends the standard "we're all OK" headers back to the
+     browser */
+  server.httpSuccess();
+
+
+  /* if we're handling a GET or POST, we can output our data here.
+     For a HEAD request, we just stop after outputting headers. */
+  if (type != WebServer::HEAD)
+  {
+    /* this defines some HTML text in read-only memory aka PROGMEM.
+     * This is needed to avoid having the string copied to our limited
+     * amount of RAM. */
+     P(onoff) ="'> Anschalten";
+     if (digitalRead(statusPin) == HIGH) {
+        P(onoff) = "on'> Ausschalten";
+          digitalWrite(switchPin, HIGH);
+     } else {
+        P(onoff) ="'> Anschalten";
+          digitalWrite(switchPin, LOW);
+     }
+     
+    P(head) = "<!DOCTYPE HTML><html><head><title>SaunaControl</title>"
+          "<style>body {background-color: #f5e4d1;background-position:center center;background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/bg.png)}#panel {width: 638px; height: 378px; margin: 100px auto; padding-top: 180px; background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/panel.png);}a:link, a:visited {display: block;width: 131px;height: 179px;margin: auto;background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/off.png);background-repeat: no-repeat;color: transparent;}a.on {background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/on.png);}a:hover, a:active {background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/touch.png);}</style>"
+          "<link rel='shortcut icon' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-72x72.png' />"
+          "<link rel='apple-touch-icon' sizes='57x57' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-57x57.png' />"
+          "<link rel='apple-touch-icon' sizes='72x72' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-72x72.png' />"
+          "<link rel='apple-touch-icon' sizes='144x144' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-144x144.png' />"
+          "</head><body><div id='panel'><a href='"
+          "#"
+          "' class='";
+    P(foot) = "</a></div></body></html>";
+    /* this is a special form of print that outputs from PROGMEM */
+    server.printP(head);
+    server.printP(onoff);
+    server.printP(foot);
   }
+}
 
+void setup()
+{
   pinMode(statusPin, INPUT);      
   pinMode(switchPin, OUTPUT);      
 
-  // start the Ethernet connection and the server:
+  /* initialize the Ethernet adapter */
   Ethernet.begin(mac, ip);
-  server.begin();
-  Serial.print("server is at ");
-  Serial.println(Ethernet.localIP());
+
+  /* setup our default command that will be run when the user accesses
+   * the root page on the server */
+  webserver.setDefaultCommand(&helloCmd);
+
+  /* run the same command if you try to load /index.html, a common
+   * default page name */
+  webserver.addCommand("index.html", &helloCmd);
+
+  /* start the webserver */
+  webserver.begin();
 }
 
+void loop()
+{
+  char buff[64];
+  int len = 64;
 
-void loop() {
-  // listen for incoming clients
-  EthernetClient client = server.available();
-  if (client) {
-    Serial.println("new client");
-    // an http request ends with a blank line
-    boolean currentLineIsBlank = true;
-    while (client.connected()) {
-      if (client.available()) {
-        char c = client.read();
-        Serial.write(c);
-        // if you've gotten to the end of the line (received a newline
-        // character) and the line is blank, the http request has ended,
-        // so you can send a reply
-        if (c == '\n' && currentLineIsBlank) {
-          // send a standard http response header
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: text/html");
-          client.println("Connnection: close");
-          client.println();
-          client.println("<!DOCTYPE HTML>");
-          client.println("<html><head><title>SaunaControl</title>");
-          client.println("<style>body {background-color: #f5e4d1;background-position:center center;background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/bg.png)}#panel {width: 638px; height: 378px; margin: 100px auto; padding-top: 180px; background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/panel.png);}a:link, a:visited {display: block;width: 131px;height: 179px;margin: auto;background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/off.png);background-repeat: no-repeat;color: transparent;}a.on {background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/on.png);}a:hover, a:active {background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/touch.png);}</style>");
-
-          client.println("</head><body><div id='panel'><a href='");
-          client.println("#");
-          client.println("' class='");
-          if (digitalRead(statusPin) == HIGH) {
-            client.println("on'> Ausschalten");
-          } else {
-            client.println("'> Anschalten");
-          }
-          client.println("</a></div></body></html>");
-
-          break;
-        }
-        if (c == '\n') {
-          // you're starting a new line
-          currentLineIsBlank = true;
-        } 
-        else if (c != '\r') {
-          // you've gotten a character on the current line
-          currentLineIsBlank = false;
-        }
-      }
-    }
-    // give the web browser time to receive the data
-    delay(1);
-    // close the connection:
-    client.stop();
-    Serial.println("client disonnected");
-  }
+  /* process incoming connections one at a time forever */
+  webserver.processConnection(buff, &len);
 }
+
 
