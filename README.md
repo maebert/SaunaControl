@@ -9,7 +9,7 @@ Why?
 How?
 ----
 
-Depends on (Webduino)[https://github.com/sirleech/Webduino] and an [Arduino Ethernet](http://www.arduino.cc/en/Main/ArduinoBoardEthernet). Sets up the Arduino as a web server that renders a simple but beautiful interface for controlling a Sauna. Or, you know, whatever you want to control. Uses one port to read the state and another one to flick the switch. Even has an LED.
+Depends on [Webduino](https://github.com/sirleech/Webduino) and an [Arduino Ethernet](http://www.arduino.cc/en/Main/ArduinoBoardEthernet). Sets up the Arduino as a web server that renders a simple but beautiful interface for controlling a Sauna. Or, you know, whatever you want to control. Uses one port to read the state and another one to flick the switch. Even has an LED.
 
 MIT Licensed
 ------------
