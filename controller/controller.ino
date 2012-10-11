@@ -22,47 +22,63 @@ static uint8_t ip[] = { 192, 168, 2, 42 };
 #define PREFIX ""
 WebServer webserver(PREFIX, 8080);
 
-/* commands are functions that get called by the webserver framework
- * they can read any posted data from client, and they output to the
- * server to send data back to the web browser. */
-void helloCmd(WebServer &server, WebServer::ConnectionType type, char *, bool)
-{
-  /* this line sends the standard "we're all OK" headers back to the
-     browser */
-  server.httpSuccess();
-
-
-  /* if we're handling a GET or POST, we can output our data here.
-     For a HEAD request, we just stop after outputting headers. */
-  if (type != WebServer::HEAD)
-  {
-    /* this defines some HTML text in read-only memory aka PROGMEM.
-     * This is needed to avoid having the string copied to our limited
-     * amount of RAM. */
-     P(onoff) ="'> Anschalten";
-     if (digitalRead(statusPin) == HIGH) {
-        P(onoff) = "on'> Ausschalten";
-          digitalWrite(switchPin, HIGH);
-     } else {
-        P(onoff) ="'> Anschalten";
-          digitalWrite(switchPin, LOW);
-     }
-     
-    P(head) = "<!DOCTYPE HTML><html><head><title>SaunaControl</title>"
+P(head) = "<!DOCTYPE HTML><html><head><title>SaunaControl</title>"
           "<style>body {background-color: #f5e4d1;background-position:center center;background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/bg.png)}#panel {width: 638px; height: 378px; margin: 100px auto; padding-top: 180px; background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/panel.png);}a:link, a:visited {display: block;width: 131px;height: 179px;margin: auto;background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/off.png);background-repeat: no-repeat;color: transparent;}a.on {background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/on.png);}a:hover, a:active {background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/touch.png);}</style>"
           "<link rel='shortcut icon' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-72x72.png' />"
           "<link rel='apple-touch-icon' sizes='57x57' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-57x57.png' />"
           "<link rel='apple-touch-icon' sizes='72x72' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-72x72.png' />"
           "<link rel='apple-touch-icon' sizes='144x144' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-144x144.png' />"
-          "</head><body><div id='panel'><a href='"
-          "#"
-          "' class='";
-    P(foot) = "</a></div></body></html>";
+          "<meta name='apple-mobile-web-app-capable' content='yes' />"
+          "<meta name='apple-mobile-web-app-status-bar-style' content='black' />"
+          "</head><body><div id='panel'>";
+P(foot) = "</div></body></html>";
+P(linkon) = "<a href='off.html' class='on'> Ausschalten</a>";
+P(linkoff) = "<a href='on.html' class=''> Anschalten</a>";
+
+void response(WebServer &server, WebServer::ConnectionType type)
+{
+  server.httpSuccess();
+  if (type != WebServer::HEAD)
+  {
+ 
     /* this is a special form of print that outputs from PROGMEM */
     server.printP(head);
-    server.printP(onoff);
+    if (digitalRead(statusPin) == HIGH) {
+        server.printP(linkon);
+    } else {
+        server.printP(linkoff);
+    }
     server.printP(foot);
   }
+}
+
+/* Returns  the controls without changin anything */
+void helloCmd(WebServer &server, WebServer::ConnectionType type, char *, bool)
+{
+  response(server, type);
+}
+/* Switches the sauna on */
+void onCmd(WebServer &server, WebServer::ConnectionType type, char *, bool)
+{
+  if (digitalRead(statusPin) == LOW) {
+    digitalWrite(switchPin, HIGH);
+    delay(250);
+    digitalWrite(switchPin, LOW);
+    delay(250);
+  }
+  response(server, type);
+}
+
+/* Switches the sauna off */
+void offCmd(WebServer &server, WebServer::ConnectionType type, char *, bool)
+{
+  if (digitalRead(statusPin) == HIGH) {
+    digitalWrite(switchPin, HIGH);
+    delay(250);
+    digitalWrite(switchPin, LOW);
+    delay(250);
+  }
+  response(server, type);
 }
 
 void setup()
@@ -80,7 +96,9 @@ void setup()
   /* run the same command if you try to load /index.html, a common
    * default page name */
   webserver.addCommand("index.html", &helloCmd);
-
+  webserver.addCommand("off.html", &offCmd);
+  webserver.addCommand("on.html", &onCmd);
+  
   /* start the webserver */
   webserver.begin();
 }
