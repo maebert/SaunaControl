@@ -1,11 +1,127 @@
 <!DOCTYPE HTML><html><head><title>SaunaControl</title>
-<style>body {background-color: #f5e4d1;background-position:center center;background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/bg.png)}#panel {width: 638px; height: 378px; margin: 100px auto; padding-top: 180px; background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/panel.png);}a:link, a:visited {display: block;width: 131px;height: 179px;margin: auto;background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/off.png);background-repeat: no-repeat;color: transparent;}a.on {background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/on.png);}a:hover, a:active {background-image: url(https://raw.github.com/maebert/SaunaControl/master/img/touch.png);}</style>
-<link rel='shortcut icon' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-72x72.png' />
-<link rel='apple-touch-icon' sizes='57x57' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-57x57.png' />
-<link rel='apple-touch-icon' sizes='72x72' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-72x72.png' />
-<link rel='apple-touch-icon' sizes='144x144' href='https://raw.github.com/maebert/SaunaControl/master/img/apple-touch-icon-144x144.png' />
+<!-- To compress: rewrite background URLS with https://raw.github.com/maebert/SaunaControl/master/img/ -->
+<style>
+body
+    {
+    background-color: #f5e4d1;
+    background-position:center center;
+    background-image: url(img/bg.png)
+    }
+#panel
+    {
+    width: 670px;
+    height: 453px;
+    margin: 100px auto;
+    padding-top: 105px;
+    background-image: url(img/panel.png);
+    }
+a:link, a:visited
+    {
+    display: block;
+    width: 131px;
+    height: 179px;
+    margin: auto;
+    background-image: url(img/off.png);
+    background-repeat: no-repeat;
+    color: transparent;
+    }
+a.on
+    {
+    background-image: url(img/on.png);
+    }
+a:hover, a:active
+    {
+    background-image: url(img/touch.png);
+    }
+#numpad
+    {
+    width: 170px;
+    }
+input
+    {
+    border: none;
+    width: 140px;
+    height: 34px;
+    background: none;
+    display: block;
+    margin: 0px 0px 30px 2px;
+    overflow: visible;
+    text-align: left;
+    padding: 0px 10px;
+    letter-spacing: 27px;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    line-height: 30px;
+    }
+#sidepanel
+    {
+    margin-left: 100px;
+    float: left;
+    }
+button
+    {
+    border: none;
+    background: none;
+    margin-bottom: 6px;
+    margin-right: 5px;
+    width: 50px;
+    height: 50px;
+    color: rgb(224,208,204);
+    text-shadow: 0px -1px 0px rgb(219,198,194), 0px 1px 0px white;
+    font-weight: bold;
+    font-size: 36px;
+    line-height: 40px;
+    }
+button:active
+    {
+    color:  rgb(178,163,163);
+    }
+#tuer
+    {
+    color: transparent;
+    margin: 20px auto 0px auto;
+    background-image: url(img/tuer-zu.png);
+    background-repeat: no-repeat;
+    width: 89px;
+    height: 26px;
+    }
+#tuer.on
+    {
+    background-image: url(img/tuer-auf.png);
+    }
+#right
+    {
+    float: right;
+    width: 320px;
+    margin-right: 40px;
+    margin-top: 40px;
+    }
+</style>
+<link rel='shortcut icon' href='img/apple-touch-icon-72x72.png' />
+<link rel='apple-touch-icon' sizes='57x57' href='img/apple-touch-icon-57x57.png' />
+<link rel='apple-touch-icon' sizes='72x72' href='img/apple-touch-icon-72x72.png' />
+<link rel='apple-touch-icon' sizes='144x144' href='img/apple-touch-icon-144x144.png' />
 <meta name='apple-mobile-web-app-capable' content='yes' />
 <meta name='apple-mobile-web-app-status-bar-style' content='black' />
-</head><body><div id='panel'>
-<a href='off.html' class='on'> Ausschalten</a>
-</div></body></html>
+</head><body>
+<div id='panel'>
+    <div id="sidepanel">
+        <input type="text" length="4" id="password" />
+    <div id="numpad">
+        <button id="b1" onClick="add(1);">1</button><button id="b2" onClick="add(2);">2</button><button id="b3" onClick="add(3);">3</button><button id="b4" onClick="add(4);">4</button><button id="b5" onClick="add(5);">5</button><button id="b6" onClick="add(6);">6</button><button id="b7" onClick="add(7);">7</button><button id="b8" onClick="add(8);">8</button><button id="b9" onClick="add(9);">9</button>
+    </div>
+</div>
+<div id="right">
+    <a data-link="-off.html" href='off.html' id="switch" class='on'> Ausschalten</a>
+    <div id="tuer" class="on">Tuer auf</div>
+</div>
+</div>
+<script language="Javascript">
+var index = 1; function add (v)
+{if (document.getElementById("password").value.length < 4) {document.getElementById("password").value += v; document.getElementById("switch").href = document.getElementById("password").value + document.getElementById("switch").getAttribute("data-link");
+            }
+    }
+</script>
+
+</body></html>
